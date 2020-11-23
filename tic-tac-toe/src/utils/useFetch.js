@@ -1,25 +1,54 @@
-import {useEffect, useState, useRef} from "react";
+import { useState, useEffect } from 'react';
 
-export const useFetch = url => {
-    const isCurrent = useRef(true);
-    const [state, setState] = useState({data: null, loading: true});
+export const useFetch = (initialUrl, initialParams = {}, skip = false) => {
 
-    useEffect(() => {
-        return () => {
-            isCurrent.current = false;
+  const [url, updateUrl] = useState(initialUrl);
+  const [params, updateParams] = useState(initialParams);
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [refetchIndex, setRefetchIndex] = useState(0);
+
+  const queryString = Object.keys(params)
+    .map(
+      (key) => encodeURIComponent(key) + '=' + encodeURIComponent(params[key])
+    )
+    .join('&');
+
+
+  const refetch = () =>
+    setRefetchIndex((prevRefetchIndex) => prevRefetchIndex + 1);
+  useEffect(() => {
+    const fetchData = async () => {
+      if (skip) return;
+      setIsLoading(true);
+      try {
+        const response = await fetch(`${url}${queryString}`);
+        const result = await response.json();
+        if (response.ok) {
+          setData(result);
+        } else {
+          setHasError(true);
+          setErrorMessage(result);
         }
-    }, []);
-
-    useEffect(() => {
-        setState(state => ({data: state.data, loading: true}));
-        fetch(url)
-            .then(res => res.text())
-            .then(r => {
-                if (isCurrent.current) {
-                    setState({data: r, loading: false })
-                }
-            })
-    }, [url, setState])
-
-    return state;
-}
+      } catch (err) {
+        setHasError(true);
+        setErrorMessage(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [url, params, refetchIndex]);
+  return {
+    data,
+    isLoading,
+    hasError,
+    errorMessage,
+    updateUrl,
+    updateParams,
+    refetch,
+  };
+};
+export default useFetch;
