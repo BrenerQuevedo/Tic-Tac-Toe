@@ -22,5 +22,3 @@ export default function GameContextProvider({ children }) {
 GameContextProvider.propTypes = {
   children: types.node.isRequired
 }
-
-export default GameContextProvider;
