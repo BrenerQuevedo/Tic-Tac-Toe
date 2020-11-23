@@ -4,3 +4,11 @@ export const INITIAL_STATE = {
     isNext: true,
     history: []
 }
+
+export default function reducer(state, action) {
+    switch(action.type) {
+        case "RESET": {
+            return INITIAL_STATE;
+        }
+    }
+}
