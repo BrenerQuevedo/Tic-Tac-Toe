@@ -1,9 +1,38 @@
-import React from 'react';
+import React, {useContext} from 'react';
+import t from 'prop-types';
 
-// import { Container } from './styles';
+import { GameContext } from '../contexts/GameContext';
 
-function Square() {
-  return <div />;
+
+export default function Square({value, index}) {
+
+  const {
+    state: { squares, isXNext, isWinner },
+    dispatch,
+  } = useContext(GameContext);
+
+  function handleClick() {
+    if (squares[index]) return;
+    if (isWinner) return;
+
+    const newSquares = [...squares];
+    newSquares[index] = isXNext ? 'X' : 'O';
+
+    dispatch({ type: 'UPDATE_SQUARES', payload: newSquares });
+  }
+
+  return (
+    <button type="button" onClick={handleClick}>
+      {value}
+    </button>
+  );
 }
 
-export default Square;
+Square.defaultProps = {
+  value: null,
+};
+
+Square.propTypes = {
+  value: t.string,
+  index: t.number.isRequired,
+};
